@@ -1,113 +1,41 @@
-# Local Edit Studio 1.4 — Native iPhone Edition
+# Edit Studio 2.0
 
-A native SwiftUI image editor that runs compatible Stable Diffusion Core ML models locally on iPhone and iPad.
+Edit Studio is an Expo/React Native photo editor for iPhone. It replaces the former native model-import prototype with a responsive client and a secure cloud image-editing route.
 
-## What is included
+## Product scope
 
-- Native SwiftUI UI
-- Photos import and export
-- Finger/Apple Pencil mask painting
-- Selected-area editing
-- Whole-image image-to-image editing
-- Localized crop generation to reduce work
-- Exact preservation of pixels outside the selected region
-- Seed, steps, guidance, and preservation controls
-- Local edit history
-- On-device Core ML inference
-- Model folder importer
-- Increased-memory-limit entitlement
-- XcodeGen project definition
+- Manual brush and mask erasing
+- Selected-area and whole-image editing
+- Retouch, replace, and creative modes
+- Preservation controls and reference images
+- Local history, undo, reset, discard, save, and share
+- First-run 18+ and consent acknowledgement
+- Existing consensual adult nude images may be submitted for permitted edits
+- No generation of nudity from clothed photos, minors, coercive/non-consensual content, or explicit sexual acts
+- No client-side generation quota; provider rate limits and billing still apply
 
-## Why the app remains native Swift
+## Secure generation
 
-The core feature is multi-gigabyte Core ML diffusion inference using Apple's StableDiffusion Swift package, Core ML compute units, and iOS memory-management options. A native Swift app is substantially cleaner and more reliable for this than wrapping it through Expo/React Native.
+The phone never contains the model provider key. `src/app/api/edit+api.ts` runs on EAS Hosting and reads `OPENAI_API_KEY` from the server environment. Expo Router sends the native client to the fixed production origin at `https://edit-studio.expo.app/api/edit`.
 
-The app itself remains fully native. Expo Application Services is used only as the hosted macOS build, signing, and TestFlight delivery pipeline.
+Required EAS production variables:
 
-## Requirements
+- `OPENAI_API_KEY` — secret, server-side only
 
-- Mac with Xcode
-- Apple Developer account
-- XcodeGen (`brew install xcodegen`)
-- iPhone/iPad running iOS 17+
-- A compatible Core ML Stable Diffusion Resources folder
+`EXPO_PUBLIC_EDIT_API_URL` is an optional override for a separate staging service; production does not require it.
 
-## Create the Xcode project
+## Over-the-air updates
 
-From Terminal:
+Production builds use the `production` EAS Update channel and the app-version runtime policy. JavaScript, styling, prompts, and bundled assets can be updated without a new App Store build as long as the native runtime does not change. Adding/upgrading native libraries, changing native configuration, or changing permissions still requires a new build.
 
-```bash
-cd LocalEditStudio_iOS
-xcodegen generate
-open LocalEditStudio.xcodeproj
+## Commands
+
+```sh
+pnpm install
+pnpm typecheck
+pnpm test
+pnpm export:web
+eas update --channel production --environment production --message "Description"
 ```
 
-In Xcode:
-
-1. Select the `LocalEditStudio` target.
-2. Signing & Capabilities → select your Apple Developer team.
-3. Confirm the bundle identifier is `com.tyleralanis.localeditstudio`.
-4. Connect your iPhone and build to the device.
-5. For TestFlight, Product → Archive → Distribute App → App Store Connect.
-
-## Model installation
-
-The TestFlight binary intentionally does not bundle multi-gigabyte diffusion weights.
-
-Use Apple's `ml-stable-diffusion` conversion workflow or a compatible pre-converted Core ML model. On iPhone, the imported Resources folder should contain at minimum:
-
-- `TextEncoder.mlmodelc` (or a compatible encoder)
-- `UnetChunk1.mlmodelc`
-- `UnetChunk2.mlmodelc`
-- `VAEDecoder.mlmodelc`
-- `VAEEncoder.mlmodelc` (required for editing existing images)
-- `vocab.json`
-- `merges.txt`
-
-Put the Resources folder in iCloud Drive / Files, open Local Edit Studio → Models, and import the folder.
-
-Apple recommends chunked UNet files, compressed weights, and reduced-memory operation on iPhone.
-
-## Important implementation note
-
-Apple's current StableDiffusion Swift pipeline supports text-to-image and image-to-image. The app implements selected-area editing by:
-
-1. rendering the user's mask,
-2. finding a padded crop around the selection,
-3. running image-to-image on that crop,
-4. compositing only selected pixels back into the original.
-
-This keeps unselected pixels identical to the source while giving the local model context around the edit.
-
-## GitHub
-
-This folder is ready to commit to GitHub. The repo can be created or uploaded from Xcode, GitHub Desktop, or the command line.
-
-## EAS Build and TestFlight
-
-The repository is connected to the Expo project `@alanis-projects/edit-studio` with this directory as its base directory. The production workflow:
-
-1. generates the Xcode project with XcodeGen on an EAS macOS worker,
-2. signs the native app for `com.tyleralanis.localeditstudio`,
-3. creates a production App Store archive, and
-4. uploads the successful build to TestFlight.
-
-The workflow definition is `.eas/workflows/build-and-testflight.yml`; its production build profile is in `eas.json`.
-
-
-See `RELEASE_NOTES_1.1.md` for the current release-candidate feature set.
-
-
-## Combine People
-
-Version 1.2 adds on-device person extraction and interactive photographic compositing using Apple Vision.
-
-
-## Preservation-first editing
-
-Version 1.3 adds visible identity/geometry/scene locks, Retouch/Replace/Creative modes, and internal candidate ranking to better preserve the original subject while still filling edited regions convincingly.
-
-
-## Version 1.4
-
-Adds local QA inspection, Vision Smart Select, pose-aware person compositing, autosave/crash recovery, and professional export controls.
+The previous Swift/Core ML implementation is retained under `legacy-native/` for reference only.

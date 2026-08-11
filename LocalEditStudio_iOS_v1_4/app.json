@@ -1,16 +1,53 @@
 {
   "expo": {
-    "name": "LocalEditStudio",
+    "name": "Edit Studio",
     "slug": "edit-studio",
-    "version": "1.4.0",
     "owner": "alanis-projects",
+    "version": "2.0.0",
+    "orientation": "portrait",
+    "scheme": "editstudio",
+    "userInterfaceStyle": "dark",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#09090d"
+    },
     "ios": {
       "bundleIdentifier": "com.tyleralanis.localeditstudio",
-      "buildNumber": "5",
-      "supportsTablet": true,
+      "supportsTablet": false,
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSPhotoLibraryUsageDescription": "Edit Studio needs access to photos you choose for editing.",
+        "NSPhotoLibraryAddUsageDescription": "Edit Studio needs permission to save your finished edits."
       }
+    },
+    "web": {
+      "output": "server",
+      "bundler": "metro"
+    },
+    "plugins": [
+      [
+        "expo-router",
+        {
+          "origin": "https://edit-studio.expo.app"
+        }
+      ],
+      "expo-image-picker",
+      "expo-media-library",
+      "expo-updates",
+      "expo-font"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "updates": {
+      "url": "https://u.expo.dev/e16caffe-e221-4a6f-ad42-92f5f251b555",
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
     },
     "extra": {
       "eas": {

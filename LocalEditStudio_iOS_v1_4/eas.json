@@ -1,24 +1,32 @@
 {
   "cli": {
+    "version": ">= 16.28.0",
     "appVersionSource": "remote"
   },
   "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "channel": "development",
+      "environment": "development"
+    },
+    "preview": {
+      "distribution": "internal",
+      "channel": "preview",
+      "environment": "preview"
+    },
     "production": {
       "distribution": "store",
-      "autoIncrement": true,
-      "ios": {
-        "config": "production-ios.yml",
-        "scheme": "LocalEditStudio",
-        "buildConfiguration": "Release",
-        "image": "latest"
-      }
+      "channel": "production",
+      "environment": "production",
+      "autoIncrement": true
     }
   },
   "submit": {
     "production": {
       "ios": {
         "ascAppId": "6800347711",
-        "bundleIdentifier": "com.tyleralanis.localeditstudio"
+        "appleTeamId": "55856J7J24"
       }
     }
   }

@@ -1,20 +1,73 @@
-name: Build Edit Studio and upload to TestFlight
+name: Release Edit Studio
 
 on:
   workflow_dispatch: {}
+  push:
+    branches: [main]
 
 jobs:
+  validate:
+    name: Validate Edit Studio
+    runs_on: ubuntu-latest
+    steps:
+      - uses: eas/checkout
+      - uses: eas/install_node_modules
+      - name: Verify project identity
+        run: |
+          node -e "const a=require('./app.json').expo;if(a.extra.eas.projectId!=='e16caffe-e221-4a6f-ad42-92f5f251b555'||a.ios.bundleIdentifier!=='com.tyleralanis.localeditstudio'||a.slug!=='edit-studio'){throw new Error('Wrong Expo project or bundle identifier')}"
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Test safeguards and masks
+        run: pnpm test
+
+  deploy_api:
+    name: Deploy secure edit API
+    needs: [validate]
+    type: deploy
+    environment: production
+    params:
+      prod: true
+      source_maps: true
+
+  fingerprint:
+    name: Check native runtime
+    needs: [deploy_api]
+    type: fingerprint
+    environment: production
+
+  get_ios_build:
+    name: Find compatible iOS build
+    needs: [fingerprint]
+    type: get-build
+    params:
+      fingerprint_hash: ${{ needs.fingerprint.outputs.ios_fingerprint_hash }}
+      profile: production
+
   build_ios:
     name: Build Edit Studio for iOS
+    needs: [get_ios_build]
+    if: ${{ !needs.get_ios_build.outputs.build_id }}
     type: build
     params:
       platform: ios
       profile: production
+      message: Edit Studio 2.0 cloud editor
 
   testflight:
-    name: Upload Edit Studio to TestFlight
-    type: testflight
+    name: Upload new runtime to TestFlight
     needs: [build_ios]
+    type: testflight
     params:
       build_id: ${{ needs.build_ios.outputs.build_id }}
       profile: production
+
+  publish_update:
+    name: Publish compatible over-the-air update
+    needs: [get_ios_build]
+    if: ${{ needs.get_ios_build.outputs.build_id }}
+    type: update
+    environment: production
+    params:
+      branch: production
+      platform: ios
+      message: Edit Studio production update
