@@ -34,7 +34,7 @@ struct ModelManagerView: View {
                         ForEach(store.installedModels) { model in
                             HStack {
                                 Image(systemName: store.selectedModel?.id == model.id ? "checkmark.circle.fill" : "circle")
-                                    .foregroundStyle(store.selectedModel?.id == model.id ? .green : .secondary)
+                                    .foregroundStyle(store.selectedModel?.id == model.id ? Color.green : Color.secondary)
 
                                 VStack(alignment: .leading) {
                                     Text(model.name)

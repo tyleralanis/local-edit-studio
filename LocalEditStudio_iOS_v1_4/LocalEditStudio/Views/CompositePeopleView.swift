@@ -108,7 +108,7 @@ Choose the photo you want to keep as the base, then choose a second photo contai
                 PhotosPicker(selection: $vm.basePhotoItem, matching: .images) {
                     HStack {
                         Image(systemName: vm.baseImage == nil ? "photo.badge.plus" : "checkmark.circle.fill")
-                            .foregroundStyle(vm.baseImage == nil ? .tint : .green)
+                            .foregroundStyle(vm.baseImage == nil ? Color.accentColor : Color.green)
                         VStack(alignment: .leading) {
                             Text("1. Choose base photo")
                                 .font(.headline)
@@ -127,7 +127,7 @@ Choose the photo you want to keep as the base, then choose a second photo contai
                 PhotosPicker(selection: $vm.donorPhotoItem, matching: .images) {
                     HStack {
                         Image(systemName: vm.extractedSubject == nil ? "person.crop.rectangle.badge.plus" : "checkmark.circle.fill")
-                            .foregroundStyle(vm.extractedSubject == nil ? .tint : .green)
+                            .foregroundStyle(vm.extractedSubject == nil ? Color.accentColor : Color.green)
                         VStack(alignment: .leading) {
                             Text("2. Choose donor photo")
                                 .font(.headline)
