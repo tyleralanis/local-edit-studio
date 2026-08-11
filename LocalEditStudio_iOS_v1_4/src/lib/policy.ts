@@ -32,7 +32,7 @@ export function evaluatePrompt(prompt: string): PolicyDecision {
   return { allowed: true };
 }
 
-export const CONSENT_VERSION = 1;
+export const CONSENT_VERSION = 2;
 
 export const CONSENT_DISCLAIMER =
   "Edit Studio is for adults 18+ editing images they own or have explicit permission to edit. Every depicted person must be an adult who consented to the image and this use. Existing consensual adult nude images may be used for permitted edits. Do not use Edit Studio to create nudity from clothed photos, depict minors, make non-consensual intimate imagery, or create explicit sexual acts. Built-in edits stay on this device. An image is sent to the secure generation provider only when an edit needs the optional cloud generator and you choose Apply or generate edit. Provider safety rules, rate limits, and billing still apply.";
