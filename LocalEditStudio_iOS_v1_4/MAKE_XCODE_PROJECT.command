@@ -1,6 +1,7 @@
 #!/bin/zsh
 set -e
 cd "$(dirname "$0")"
+export DEVELOPMENT_TEAM="${DEVELOPMENT_TEAM:-}"
 if ! command -v xcodegen >/dev/null 2>&1; then
   echo "XcodeGen is not installed."
   echo "Install it with: brew install xcodegen"

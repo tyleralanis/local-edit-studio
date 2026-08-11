@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "name": "Edit Studio",
+    "slug": "edit-studio",
+    "version": "1.4.0",
+    "owner": "alanis-projects",
+    "ios": {
+      "bundleIdentifier": "com.tyleralanis.localeditstudio",
+      "buildNumber": "5",
+      "supportsTablet": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "e16caffe-e221-4a6f-ad42-92f5f251b555"
+      }
+    }
+  }
+}

@@ -1,0 +1,20 @@
+name: Build Edit Studio and upload to TestFlight
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  build_ios:
+    name: Build Edit Studio for iOS
+    type: build
+    params:
+      platform: ios
+      profile: production
+
+  testflight:
+    name: Upload Edit Studio to TestFlight
+    type: testflight
+    needs: [build_ios]
+    params:
+      build_id: ${{ needs.build_ios.outputs.build_id }}
+      profile: production

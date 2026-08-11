@@ -18,11 +18,11 @@ A native SwiftUI image editor that runs compatible Stable Diffusion Core ML mode
 - Increased-memory-limit entitlement
 - XcodeGen project definition
 
-## Why this is native Swift instead of Expo
+## Why the app remains native Swift
 
 The core feature is multi-gigabyte Core ML diffusion inference using Apple's StableDiffusion Swift package, Core ML compute units, and iOS memory-management options. A native Swift app is substantially cleaner and more reliable for this than wrapping it through Expo/React Native.
 
-Expo can still be used later for a companion app or cloud-based edition, but it is not the right foundation for the fully local build.
+The app itself remains fully native. Expo Application Services is used only as the hosted macOS build, signing, and TestFlight delivery pipeline.
 
 ## Requirements
 
@@ -46,7 +46,7 @@ In Xcode:
 
 1. Select the `LocalEditStudio` target.
 2. Signing & Capabilities → select your Apple Developer team.
-3. Change the bundle identifier from `com.localeditstudio.app` if needed.
+3. Confirm the bundle identifier is `com.tyleralanis.localeditstudio`.
 4. Connect your iPhone and build to the device.
 5. For TestFlight, Product → Archive → Distribute App → App Store Connect.
 
@@ -83,9 +83,16 @@ This keeps unselected pixels identical to the source while giving the local mode
 
 This folder is ready to commit to GitHub. The repo can be created or uploaded from Xcode, GitHub Desktop, or the command line.
 
-## TestFlight
+## EAS Build and TestFlight
 
-No Expo/EAS build is required. This is a standard native iOS app and should be uploaded through Xcode Organizer/App Store Connect.
+The repository is connected to the Expo project `@alanis-projects/edit-studio` with this directory as its base directory. The production workflow:
+
+1. generates the Xcode project with XcodeGen on an EAS macOS worker,
+2. signs the native app for `com.tyleralanis.localeditstudio`,
+3. creates a production App Store archive, and
+4. uploads the successful build to TestFlight.
+
+The workflow definition is `.eas/workflows/build-and-testflight.yml`; its production build profile is in `eas.json`.
 
 
 See `RELEASE_NOTES_1.1.md` for the current release-candidate feature set.
