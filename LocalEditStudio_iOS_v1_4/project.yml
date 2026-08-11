@@ -1,0 +1,35 @@
+name: LocalEditStudio
+options:
+  bundleIdPrefix: com.localeditstudio
+  deploymentTarget:
+    iOS: "17.0"
+  xcodeVersion: "16.0"
+  createIntermediateGroups: true
+
+packages:
+  StableDiffusion:
+    url: https://github.com/apple/ml-stable-diffusion
+    branch: main
+
+targets:
+  LocalEditStudio:
+    type: application
+    platform: iOS
+    sources:
+      - path: LocalEditStudio
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.localeditstudio.app
+        PRODUCT_NAME: Local Edit Studio
+        SWIFT_VERSION: 5.10
+        TARGETED_DEVICE_FAMILY: "1,2"
+        INFOPLIST_FILE: LocalEditStudio/Info.plist
+        CODE_SIGN_STYLE: Automatic
+        SUPPORTS_MACCATALYST: NO
+    dependencies:
+      - package: StableDiffusion
+        product: StableDiffusion
+    entitlements:
+      path: LocalEditStudio/LocalEditStudio.entitlements
+      properties:
+        com.apple.developer.kernel.increased-memory-limit: true
