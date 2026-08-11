@@ -285,10 +285,11 @@ public final class LocalPhotoEngineModule: Module {
         }
         context.setStrokeColor((erase ? UIColor.black : UIColor.white).cgColor)
         context.setFillColor((erase ? UIColor.black : UIColor.white).cgColor)
-        context.setLineWidth(CGFloat(normalizedWidth) * min(size.width, size.height))
+        let lineWidth = CGFloat(normalizedWidth) * min(size.width, size.height)
+        context.setLineWidth(lineWidth)
 
         if points.count == 1 {
-          let radius = context.lineWidth / 2
+          let radius = lineWidth / 2
           context.fillEllipse(in: CGRect(x: points[0].x - radius, y: points[0].y - radius, width: radius * 2, height: radius * 2))
         } else {
           context.beginPath()
