@@ -11,6 +11,16 @@ packages:
     url: https://github.com/apple/ml-stable-diffusion
     branch: main
 
+schemes:
+  LocalEditStudio:
+    build:
+      targets:
+        LocalEditStudio: all
+    run:
+      config: Debug
+    archive:
+      config: Release
+
 targets:
   LocalEditStudio:
     type: application
