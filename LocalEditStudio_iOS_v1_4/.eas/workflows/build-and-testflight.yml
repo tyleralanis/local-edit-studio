@@ -29,19 +29,15 @@ jobs:
       prod: true
       source_maps: true
 
-  fingerprint:
-    name: Check native runtime
-    needs: [deploy_api]
-    type: fingerprint
-    environment: production
-
   get_ios_build:
     name: Find compatible iOS build
-    needs: [fingerprint]
+    needs: [deploy_api]
     type: get-build
     params:
-      fingerprint_hash: ${{ needs.fingerprint.outputs.ios_fingerprint_hash }}
+      runtime_version: "2.0.0"
       profile: production
+      platform: ios
+      wait_for_in_progress: true
 
   build_ios:
     name: Build Edit Studio for iOS

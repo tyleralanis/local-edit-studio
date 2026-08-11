@@ -36,7 +36,7 @@ Required only for open-ended cloud generation:
 
 ## Over-the-air updates
 
-Production builds use the `production` EAS Update channel and the fingerprint runtime policy. JavaScript, styling, prompts, safeguards, and bundled assets can be updated without a new App Store build as long as the native runtime does not change. Adding/upgrading native libraries, changing native configuration, or changing permissions changes the fingerprint and requires a new build, preventing incompatible updates from reaching older binaries.
+Production builds use the `production` EAS Update channel and the app-version runtime policy. JavaScript, styling, prompts, safeguards, and bundled assets can be updated without a new App Store build while the app stays on version `2.0.0`. Adding or upgrading native libraries, changing native configuration, or changing permissions requires incrementing the app version and creating a new build, preventing incompatible updates from reaching older binaries.
 
 ## Commands
 
