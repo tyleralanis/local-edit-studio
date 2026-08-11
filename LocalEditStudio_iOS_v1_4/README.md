@@ -1,6 +1,6 @@
 # Edit Studio 2.0
 
-Edit Studio is an Expo/React Native photo editor for iPhone. It replaces the former native model-import prototype with a responsive client and a secure cloud image-editing route.
+Edit Studio is an Expo/React Native photo editor for iPhone and modern desktop browsers. It replaces the former manual model-import prototype with a responsive editor, built-in credential-free effects, and an optional secure cloud image-editing route.
 
 ## Product scope
 
@@ -9,16 +9,22 @@ Edit Studio is an Expo/React Native photo editor for iPhone. It replaces the for
 - Retouch, replace, and creative modes
 - Preservation controls and reference images
 - Local history, undo, reset, discard, save, and share
+- On-device lighting, color, retouching, sharpening, blur, cinematic grading, and painted-area cleanup
+- The same built-in editing flow in a browser with no Python installation
 - First-run 18+ and consent acknowledgement
 - Existing consensual adult nude images may be submitted for permitted edits
 - No generation of nudity from clothed photos, minors, coercive/non-consensual content, or explicit sexual acts
-- No client-side generation quota; provider rate limits and billing still apply
+- No app-imposed edit quota; provider rate limits and billing apply only to cloud generation
 
-## Secure generation
+## Built-in editing
+
+Common commands run locally without an account, model download, or provider key: brighten, darken, contrast, vibrant, black and white, warm, cool, blur, sharpen, smooth skin, cinematic, enhance, recolor a painted area, and clean up a painted area. On iOS these use the bundled Core Image module; on the web they use the browser canvas. Open-ended semantic replacement remains an optional cloud feature.
+
+## Optional secure generation
 
 The phone never contains the model provider key. `src/app/api/edit+api.ts` runs on EAS Hosting and reads `OPENAI_API_KEY` from the server environment. Expo Router sends the native client to the fixed production origin at `https://edit-studio.expo.app/api/edit`.
 
-Required EAS production variables:
+Required only for open-ended cloud generation:
 
 - `OPENAI_API_KEY` — secret, server-side only
 

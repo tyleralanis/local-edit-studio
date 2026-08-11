@@ -27,6 +27,8 @@ import { StudioButton } from "@/components/StudioButton";
 import { requestEdit } from "@/lib/api";
 import { createID } from "@/lib/ids";
 import { prepareImage, removeStudioFiles, saveGeneratedBase64 } from "@/lib/images";
+import { applyLocalEdit } from "@/lib/localEdits";
+import { detectLocalOperation, LOCAL_EDIT_HELP } from "@/lib/localIntent";
 import { hasPaintedSelection } from "@/lib/mask";
 import { CONSENT_DISCLAIMER, CONSENT_VERSION, evaluatePrompt } from "@/lib/policy";
 import {
@@ -381,6 +383,44 @@ export default function StudioScreen() {
       return;
     }
 
+    const localOperation = reference ? null : detectLocalOperation(requestedPrompt);
+    if (localOperation === "remove" && scope === "whole") {
+      setNotice({
+        title: "Paint the area to clean up",
+        message: "Choose Selected area, paint over the object, then apply the edit. Cleanup copies nearby image detail into the painted area.",
+      });
+      return;
+    }
+    if (localOperation) {
+      setBusy(true);
+      setStatus("Applying edit on this device");
+      try {
+        const resultURI = await applyLocalEdit({
+          image: working,
+          operation: localOperation,
+          amount: Math.max(0.45, Math.min(1, 1.15 - preserve * 0.55)),
+          strokes,
+          scope,
+        });
+        pushHistory(requestedPrompt);
+        const result = await prepareImage(resultURI, "local-result");
+        setWorking(result);
+        setPrompt(requestedPrompt);
+        setStrokes([]);
+        setShowOriginal(false);
+        setStatus("On-device edit complete");
+      } catch (error) {
+        setNotice({
+          title: "Local edit failed",
+          message: error instanceof Error ? error.message : "Try the edit again.",
+        });
+        setStatus("");
+      } finally {
+        setBusy(false);
+      }
+      return;
+    }
+
     const controller = new AbortController();
     abortRef.current = controller;
     setBusy(true);
@@ -411,7 +451,14 @@ export default function StudioScreen() {
       if (error instanceof Error && error.name === "AbortError") {
         setStatus("Generation cancelled");
       } else {
-        setNotice({ title: "Could not generate edit", message: error instanceof Error ? error.message : "Try again." });
+        const detail = error instanceof Error ? error.message : "Try again.";
+        const needsCloudSetup = /not configured|api key|failed to fetch|network request failed/i.test(detail);
+        setNotice({
+          title: needsCloudSetup ? "This request needs cloud generation" : "Could not generate edit",
+          message: needsCloudSetup
+            ? `The built-in editor works without an account, but this open-ended request needs the optional cloud generator. ${LOCAL_EDIT_HELP}`
+            : detail,
+        });
         setStatus("");
       }
     } finally {
@@ -645,7 +692,11 @@ export default function StudioScreen() {
             </Card>
 
             <Card>
-              <SectionTitle number="3" title="Generate" subtitle="There is no app-imposed generation count. Provider limits and billing still apply." />
+              <SectionTitle
+                number="3"
+                title="Apply edit"
+                subtitle="Lighting, color, retouching, effects, and painted-area cleanup run on this device without an account. Open-ended replacements use the optional cloud generator."
+              />
               <Text style={styles.fieldLabel}>Preserve original</Text>
               <View style={styles.preserveHeader}>
                 <Text style={styles.fieldHelp}>Identity, pose, lighting, and unrequested details</Text>
@@ -678,7 +729,7 @@ export default function StudioScreen() {
                 </View>
               ) : (
                 <StudioButton
-                  label="Generate edit"
+                  label="Apply or generate edit"
                   onPress={() => void generate()}
                   disabled={!prompt.trim() || (scope === "selection" && !hasPaintedSelection(strokes))}
                   icon={<Ionicons name="sparkles" size={19} color={colors.white} />}
