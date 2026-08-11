@@ -8,7 +8,7 @@ on:
 jobs:
   validate:
     name: Validate Edit Studio
-    runs_on: ubuntu-latest
+    runs_on: linux-medium
     steps:
       - uses: eas/checkout
       - uses: eas/install_node_modules
