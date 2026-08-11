@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { evaluatePrompt } from "../src/lib/policy";
+import { evaluateLocalGenerationPrompt, evaluatePrompt } from "../src/lib/policy";
 
 test("allows ordinary retouching", () => {
   assert.equal(evaluatePrompt("Smooth the lighting and keep the face unchanged").allowed, true);
@@ -24,5 +24,11 @@ test("blocks attempts to reveal anatomy through lingerie", () => {
 
 test("blocks minors and coercion", () => {
   assert.equal(evaluatePrompt("Edit this underage subject").code, "minor_content");
+  assert.equal(evaluatePrompt("Generate a teen model").code, "minor_content");
   assert.equal(evaluatePrompt("Make a secretly captured intimate photo").code, "nonconsensual_content");
+});
+
+test("keeps local generation fictional and non-identifiable", () => {
+  assert.equal(evaluateLocalGenerationPrompt("A tasteful fictional adult boudoir portrait").allowed, true);
+  assert.equal(evaluateLocalGenerationPrompt("Create an intimate photo of a celebrity").code, "identifiable_intimate_generation");
 });

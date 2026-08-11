@@ -1,7 +1,7 @@
 import { Platform } from "react-native";
 
 import LocalPhotoEngine from "../../modules/local-photo-engine";
-import type { LocalOperation } from "./localIntent";
+import { recolorHex, type LocalOperation } from "./localIntent";
 import type { EditScope, MaskStroke, StudioImage } from "./types";
 
 function webFilter(operation: LocalOperation, amount: number) {
@@ -19,12 +19,29 @@ function webFilter(operation: LocalOperation, amount: number) {
     case "smooth": return `blur(${0.35 + amount * 1.1}px) brightness(${100 + Math.round(percent * 0.04)}%)`;
     case "cinematic": return `contrast(${100 + Math.round(percent * 0.22)}%) saturate(${100 - Math.round(percent * 0.14)}%) sepia(${Math.round(percent * 0.12)}%)`;
     case "remove": return `blur(${10 + amount * 28}px) saturate(92%)`;
-    case "tintRed": return `sepia(${Math.round(percent * 0.5)}%) hue-rotate(320deg) saturate(${100 + Math.round(percent * 0.9)}%)`;
-    case "tintBlue": return `sepia(${Math.round(percent * 0.45)}%) hue-rotate(165deg) saturate(${100 + Math.round(percent * 0.85)}%)`;
-    case "tintPink": return `sepia(${Math.round(percent * 0.45)}%) hue-rotate(295deg) saturate(${100 + Math.round(percent * 0.75)}%)`;
-    case "tintPurple": return `sepia(${Math.round(percent * 0.5)}%) hue-rotate(235deg) saturate(${100 + Math.round(percent)}%)`;
     default: return `brightness(${100 + Math.round(percent * 0.04)}%) contrast(${100 + Math.round(percent * 0.12)}%) saturate(${100 + Math.round(percent * 0.15)}%)`;
   }
+}
+
+function recolorCanvas(
+  context: CanvasRenderingContext2D,
+  source: HTMLImageElement,
+  width: number,
+  height: number,
+  color: string,
+  amount: number,
+) {
+  context.drawImage(source, 0, 0, width, height);
+  const red = Number.parseInt(color.slice(1, 3), 16);
+  const green = Number.parseInt(color.slice(3, 5), 16);
+  const blue = Number.parseInt(color.slice(5, 7), 16);
+  const luminance = (red * 0.2126 + green * 0.7152 + blue * 0.0722) / 255;
+  context.globalAlpha = 0.62 + amount * 0.34;
+  context.globalCompositeOperation = luminance < 0.14 ? "multiply" : luminance > 0.86 ? "screen" : "color";
+  context.fillStyle = color;
+  context.fillRect(0, 0, width, height);
+  context.globalAlpha = 1;
+  context.globalCompositeOperation = "source-over";
 }
 
 function loadWebImage(uri: string) {
@@ -115,7 +132,10 @@ async function applyWebEdit(
   if (!resultContext || !filteredContext) throw new Error("This browser cannot render local edits.");
 
   resultContext.drawImage(source, 0, 0, image.width, image.height);
-  if (operation === "remove" && scope === "selection") {
+  const targetColor = recolorHex(operation);
+  if (targetColor) {
+    recolorCanvas(filteredContext, source, image.width, image.height, targetColor, amount);
+  } else if (operation === "remove" && scope === "selection") {
     const offset = cleanupOffset(image.width, image.height, strokes);
     filteredContext.filter = `blur(${0.5 + amount * 1.2}px)`;
     filteredContext.drawImage(source, offset.x, offset.y, image.width, image.height);

@@ -20,6 +20,9 @@ importers:
       expo:
         specifier: ~55.0.28
         version: 55.0.28(@babel/core@7.29.7(supports-color@8.1.1))(@expo/dom-webview@55.0.6)(@expo/metro-runtime@55.0.12)(expo-router@55.0.17)(react-dom@19.2.0(react@19.2.0))(react-native@0.83.10(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.0)(supports-color@8.1.1))(react@19.2.0)(supports-color@8.1.1)(typescript@5.9.3)
+      expo-asset:
+        specifier: ~55.0.18
+        version: 55.0.18(expo@55.0.28)(react-native@0.83.10(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.0)(supports-color@8.1.1))(react@19.2.0)(supports-color@8.1.1)(typescript@5.9.3)
       expo-constants:
         specifier: ~55.0.17
         version: 55.0.17(expo@55.0.28)(react-native@0.83.10(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.0)(supports-color@8.1.1))(supports-color@8.1.1)
@@ -71,6 +74,12 @@ importers:
       react-native:
         specifier: 0.83.10
         version: 0.83.10(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.0)(supports-color@8.1.1)
+      react-native-executorch:
+        specifier: 0.9.3
+        version: 0.9.3(react-native@0.83.10(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.0)(supports-color@8.1.1))(react@19.2.0)
+      react-native-executorch-expo-resource-fetcher:
+        specifier: 0.9.1
+        version: 0.9.1(expo-asset@55.0.18(expo@55.0.28)(react-native@0.83.10(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.0)(supports-color@8.1.1))(react@19.2.0)(supports-color@8.1.1)(typescript@5.9.3))(expo-file-system@55.0.24(expo@55.0.28)(react-native@0.83.10(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.0)(supports-color@8.1.1)))(expo@55.0.28)(react-native-executorch@0.9.3(react-native@0.83.10(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.0)(supports-color@8.1.1))(react@19.2.0))(react-native@0.83.10(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.0)(supports-color@8.1.1))
       react-native-gesture-handler:
         specifier: ~2.30.0
         version: 2.30.1(react-native@0.83.10(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.0)(supports-color@8.1.1))(react@19.2.0)
@@ -942,6 +951,10 @@ packages:
   '@expo/xcpretty@4.4.4':
     resolution: {integrity: sha512-4aQzz9vgxcNXFfo/iyNgDDYfsU5XGKKxWxZopw0cVotHiW+U8IJbIxMaxsINs6bHhtkG3StKNPcOrn3eBuxKPw==}
     hasBin: true
+
+  '@huggingface/jinja@0.5.9':
+    resolution: {integrity: sha512-uWTG+l3VJRsl7EXxYizuL3P+cCPoc3cRqbWWRcQN0FhejRfbdq0RNhCmbY/YDtnTcz9icdLYuLDjsnz4d8JMuw==}
+    engines: {node: '>=18'}
 
   '@isaacs/ttlcache@1.4.1':
     resolution: {integrity: sha512-RQgQ4uQ+pLbqXfOmieB91ejmLwvSgv9nLx6sT6sD83s7umBypgg+OIBOBbEUiJXrfpnp9j0mRhYYdzp9uqq3lA==}
@@ -2359,6 +2372,13 @@ packages:
     engines: {node: '>=6'}
     hasBin: true
 
+  jsonrepair@3.15.0:
+    resolution: {integrity: sha512-wy8OTjwsJwQRnQJkKnMJJ9vcytRdBPAgIF/Hy6+s1dAj42BHMKiyL8JzEieIl3JY7idt8eyHwBWTO8mh/+mtwA==}
+    hasBin: true
+
+  jsonschema@1.5.0:
+    resolution: {integrity: sha512-K+A9hhqbn0f3pJX17Q/7H6yQfD/5OXgdrR5UE12gMXCiN9D5Xq2o5mddV2QEcX/bjla99ASsAAQUyMCCRWAEhw==}
+
   kleur@3.0.3:
     resolution: {integrity: sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w==}
     engines: {node: '>=6'}
@@ -2831,6 +2851,21 @@ packages:
 
   react-is@19.2.8:
     resolution: {integrity: sha512-s5un28nYxKJw5gvUHyW5PCC28CvBqLu9r3cWgzHT4Vo/5fqqkFcdRYsGcKf50WMPpjjFZS5d76fn3YCo2njKwQ==}
+
+  react-native-executorch-expo-resource-fetcher@0.9.1:
+    resolution: {integrity: sha512-ypHCH0ushkeExdVSJAPMBJLDx7rWl7WAN1oInznfLUwlVsDNXWQB8nNhD3UGvrHk4ajcp1/OWcwO7GIhWOghsg==}
+    peerDependencies:
+      expo: '>=54.0.0'
+      expo-asset: '>=12.0.0'
+      expo-file-system: '>=19.0.0'
+      react-native: '*'
+      react-native-executorch: '*'
+
+  react-native-executorch@0.9.3:
+    resolution: {integrity: sha512-eanpDe8sFFxbKfCh0lqrSVyU4/deiF1pZWtZOjZSV+w+qfuNsdrkQkoscxvhMwJOnvXNkBt4BXAr8pAlGOXStA==}
+    peerDependencies:
+      react: '*'
+      react-native: '*'
 
   react-native-gesture-handler@2.30.1:
     resolution: {integrity: sha512-xIUBDo5ktmJs++0fZlavQNvDEE4PsihWhSeJsJtoz4Q6p0MiTM9TgrTgfEgzRR36qGPytFoeq+ShLrVwGdpUdA==}
@@ -3388,6 +3423,9 @@ packages:
 
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
+
+  zod@4.4.3:
+    resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
 
 snapshots:
 
@@ -4442,6 +4480,8 @@ snapshots:
       '@babel/code-frame': 7.29.7
       chalk: 4.1.2
       js-yaml: 4.3.1
+
+  '@huggingface/jinja@0.5.9': {}
 
   '@isaacs/ttlcache@1.4.1': {}
 
@@ -6071,6 +6111,10 @@ snapshots:
 
   json5@2.2.3: {}
 
+  jsonrepair@3.15.0: {}
+
+  jsonschema@1.5.0: {}
+
   kleur@3.0.3: {}
 
   lan-network@0.2.1: {}
@@ -6580,6 +6624,23 @@ snapshots:
   react-is@18.3.1: {}
 
   react-is@19.2.8: {}
+
+  react-native-executorch-expo-resource-fetcher@0.9.1(expo-asset@55.0.18(expo@55.0.28)(react-native@0.83.10(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.0)(supports-color@8.1.1))(react@19.2.0)(supports-color@8.1.1)(typescript@5.9.3))(expo-file-system@55.0.24(expo@55.0.28)(react-native@0.83.10(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.0)(supports-color@8.1.1)))(expo@55.0.28)(react-native-executorch@0.9.3(react-native@0.83.10(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.0)(supports-color@8.1.1))(react@19.2.0))(react-native@0.83.10(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.0)(supports-color@8.1.1)):
+    dependencies:
+      expo: 55.0.28(@babel/core@7.29.7(supports-color@8.1.1))(@expo/dom-webview@55.0.6)(@expo/metro-runtime@55.0.12)(expo-router@55.0.17)(react-dom@19.2.0(react@19.2.0))(react-native@0.83.10(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.0)(supports-color@8.1.1))(react@19.2.0)(supports-color@8.1.1)(typescript@5.9.3)
+      expo-asset: 55.0.18(expo@55.0.28)(react-native@0.83.10(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.0)(supports-color@8.1.1))(react@19.2.0)(supports-color@8.1.1)(typescript@5.9.3)
+      expo-file-system: 55.0.24(expo@55.0.28)(react-native@0.83.10(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.0)(supports-color@8.1.1))
+      react-native: 0.83.10(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.0)(supports-color@8.1.1)
+      react-native-executorch: 0.9.3(react-native@0.83.10(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.0)(supports-color@8.1.1))(react@19.2.0)
+
+  react-native-executorch@0.9.3(react-native@0.83.10(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.0)(supports-color@8.1.1))(react@19.2.0):
+    dependencies:
+      '@huggingface/jinja': 0.5.9
+      jsonrepair: 3.15.0
+      jsonschema: 1.5.0
+      react: 19.2.0
+      react-native: 0.83.10(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.0)(supports-color@8.1.1)
+      zod: 4.4.3
 
   react-native-gesture-handler@2.30.1(react-native@0.83.10(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.0)(supports-color@8.1.1))(react@19.2.0):
     dependencies:
@@ -7094,3 +7155,5 @@ snapshots:
       yargs-parser: 21.1.1
 
   zod@3.25.76: {}
+
+  zod@4.4.3: {}

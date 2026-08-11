@@ -4,7 +4,7 @@ export interface PolicyDecision {
   message?: string;
 }
 
-const MINOR_PATTERN = /\b(child|children|minor|underage|preteen|pre-teen|schoolgirl|schoolboy|young-looking|looks? (?:very )?young|barely legal)\b/i;
+const MINOR_PATTERN = /\b(child|children|minor|underage|preteen|pre-teen|teen|teenager|schoolgirl|schoolboy|young-looking|looks? (?:very )?young|barely legal)\b/i;
 const NONCONSENSUAL_PATTERN = /\b(without (?:their )?consent|non[- ]?consensual|revenge porn|secretly|unaware|unconscious|asleep|drugged|forced|coerced|rape|assault)\b/i;
 const NUDIFICATION_PATTERN = /\b(nudify|undress|naked version|make (?:them|him|her|the person|this person) nude|remove (?:all |the )?(?:clothes|clothing|underwear|bra|lingerie)|see[- ]?through (?:clothes|clothing|lingerie|underwear|bra)|x[- ]?ray (?:clothes|clothing)|(?:make|turn|render|increase).*?(?:lingerie|underwear|bra).*?(?:see[- ]?through|transparen(?:t|cy)|sheer)|(?:make|turn|render|increase).*?(?:see[- ]?through|transparen(?:t|cy)|sheer).*?(?:lingerie|underwear|bra))\b/i;
 const EXPLICIT_ACT_PATTERN = /\b(penetration|oral sex|sex act|masturbat(?:e|ing|ion)|ejaculat(?:e|ing|ion)|intercourse|genital contact)\b/i;
@@ -32,7 +32,20 @@ export function evaluatePrompt(prompt: string): PolicyDecision {
   return { allowed: true };
 }
 
-export const CONSENT_VERSION = 2;
+export function evaluateLocalGenerationPrompt(prompt: string): PolicyDecision {
+  const decision = evaluatePrompt(prompt);
+  if (!decision.allowed) return decision;
+  if (/\b(real person|actual person|celebrity|public figure|my (?:wife|husband|girlfriend|boyfriend|partner|coworker|co-worker|friend|ex))\b/i.test(prompt)) {
+    return {
+      allowed: false,
+      code: "identifiable_intimate_generation",
+      message: "Local generation is limited to fictional, non-identifiable adults. Use ordinary editing tools for a real consenting adult photo.",
+    };
+  }
+  return { allowed: true };
+}
+
+export const CONSENT_VERSION = 3;
 
 export const CONSENT_DISCLAIMER =
-  "Edit Studio is for adults 18+ editing images they own or have explicit permission to edit. Every depicted person must be an adult who consented to the image and this use. Existing consensual adult nude images may be used for permitted edits. Do not use Edit Studio to create nudity from clothed photos, depict minors, make non-consensual intimate imagery, or create explicit sexual acts. Built-in edits stay on this device. An image is sent to the secure generation provider only when an edit needs the optional cloud generator and you choose Apply or generate edit. Provider safety rules, rate limits, and billing still apply.";
+  "Edit Studio is for adults 18+ editing images they own or have explicit permission to edit. Every depicted person must be an adult who consented to the image and this use. Existing consensual adult nude images may be used for permitted edits. Do not use Edit Studio to create nudity from clothed photos, depict minors, make non-consensual intimate imagery, or create explicit sexual acts. Built-in edits and local generation stay on this device; installing the local generator only downloads model files. Cloud generation is owner-controlled and disabled by default. If it is privately enabled later, the app will clearly identify requests that require it before uploading an image.";

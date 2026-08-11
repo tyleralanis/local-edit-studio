@@ -11,10 +11,12 @@ test("maps common requests to credential-free local edits", () => {
 });
 
 test("maps painted color changes", () => {
-  assert.equal(detectLocalOperation("Change the painted lingerie to blue"), "tintBlue");
-  assert.equal(detectLocalOperation("Make the selected fabric pink"), "tintPink");
+  assert.equal(detectLocalOperation("Change the painted shirt to blue"), "recolor:#3979d2");
+  assert.equal(detectLocalOperation("Make the selected fabric forest green"), "recolor:#28704b");
+  assert.equal(detectLocalOperation("Recolor the jacket #32a852"), "recolor:#32a852");
+  assert.equal(detectLocalOperation("Make the selected dress black"), "recolor:#171717");
 });
 
-test("leaves open-ended requests for the cloud generator", () => {
+test("leaves context-aware replacements for a generative engine", () => {
   assert.equal(detectLocalOperation("Replace the chair with a velvet couch"), null);
 });

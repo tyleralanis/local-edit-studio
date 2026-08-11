@@ -51,7 +51,7 @@ jobs:
     params:
       platform: ios
       profile: production
-      message: Edit Studio 2.0 local and cloud editor
+      message: Edit Studio 2.0 private on-device generator
 
   testflight:
     name: Upload new runtime to TestFlight

@@ -22,13 +22,14 @@ import Slider from "@react-native-community/slider";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AgeGate } from "@/components/AgeGate";
+import { LocalGenerator } from "@/components/LocalGenerator";
 import { MaskCanvas } from "@/components/MaskCanvas";
 import { StudioButton } from "@/components/StudioButton";
 import { requestEdit } from "@/lib/api";
 import { createID } from "@/lib/ids";
 import { prepareImage, removeStudioFiles, saveGeneratedBase64 } from "@/lib/images";
 import { applyLocalEdit } from "@/lib/localEdits";
-import { detectLocalOperation, LOCAL_EDIT_HELP } from "@/lib/localIntent";
+import { detectLocalOperation, LOCAL_EDIT_HELP, RECOLOR_PRESETS } from "@/lib/localIntent";
 import { hasPaintedSelection } from "@/lib/mask";
 import { CONSENT_DISCLAIMER, CONSENT_VERSION, evaluatePrompt } from "@/lib/policy";
 import {
@@ -58,6 +59,8 @@ const SUGGESTIONS = [
   "Remove the painted object and reconstruct the background naturally",
   "Create a tasteful cinematic boudoir color grade",
 ];
+
+const CLOUD_GENERATION_ENABLED = process.env.EXPO_PUBLIC_ENABLE_CLOUD_GENERATION === "true";
 
 type NoticeState = {
   title: string;
@@ -328,6 +331,27 @@ export default function StudioScreen() {
     }
   };
 
+  const acceptLocalGeneration = async (uri: string) => {
+    setBusy(true);
+    setStatus("Preparing locally generated image");
+    try {
+      await clearSession();
+      await removeStudioFiles();
+      clearEditorState();
+      const prepared = await prepareImage(uri, "local-generation");
+      setSource(prepared);
+      setWorking(prepared);
+      setMode("creative");
+      setScope("whole");
+      setStatus("Local generation complete");
+    } catch (error) {
+      setNotice({ title: "Could not open generated image", message: error instanceof Error ? error.message : "Try again." });
+      throw error;
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const undo = () => {
     if (!working || !history.length || busy) return;
     const previous = history[history.length - 1];
@@ -418,6 +442,14 @@ export default function StudioScreen() {
       } finally {
         setBusy(false);
       }
+      return;
+    }
+
+    if (!CLOUD_GENERATION_ENABLED) {
+      setNotice({
+        title: "This edit is not on-device yet",
+        message: `No paid provider was contacted. The private local generator can create a new image from the start screen, while the built-in editor handles the following existing-photo changes: ${LOCAL_EDIT_HELP}`,
+      });
       return;
     }
 
@@ -570,13 +602,16 @@ export default function StudioScreen() {
         </View>
 
         {!working ? (
-          <Card style={styles.emptyCard}>
-            <View style={styles.emptyIcon}><Ionicons name="images-outline" size={42} color={colors.accentBright} /></View>
-            <Text style={styles.emptyTitle}>Choose a photo to begin</Text>
-            <Text style={styles.emptyBody}>Paint a precise selection or edit the whole image. No model download is required.</Text>
-            <StudioButton label="Choose photo" onPress={() => void pickImage(false)} loading={busy} />
-            {status ? <Text style={styles.statusText}>{status}</Text> : null}
-          </Card>
+          <>
+            <Card style={styles.emptyCard}>
+              <View style={styles.emptyIcon}><Ionicons name="images-outline" size={42} color={colors.accentBright} /></View>
+              <Text style={styles.emptyTitle}>Choose a photo to begin</Text>
+              <Text style={styles.emptyBody}>Paint a precise selection or edit the whole image. Built-in photo edits do not require a model download.</Text>
+              <StudioButton label="Choose photo" onPress={() => void pickImage(false)} loading={busy} />
+              {status ? <Text style={styles.statusText}>{status}</Text> : null}
+            </Card>
+            <LocalGenerator onGenerated={acceptLocalGeneration} />
+          </>
         ) : (
           <>
             <Card>
@@ -656,6 +691,30 @@ export default function StudioScreen() {
                 style={styles.promptInput}
                 textAlignVertical="top"
               />
+              <View style={styles.recolorBlock}>
+                <View>
+                  <Text style={styles.fieldLabel}>Quick recolor</Text>
+                  <Text style={styles.fieldHelp}>Paint the clothing, choose a color, then apply the edit.</Text>
+                </View>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.colorRow} keyboardShouldPersistTaps="handled">
+                  {RECOLOR_PRESETS.map((color) => (
+                    <Pressable
+                      key={color.name}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Recolor painted area ${color.name}`}
+                      onPress={() => {
+                        setScope("selection");
+                        setReference(null);
+                        setPrompt(`Recolor the painted area ${color.name}`);
+                      }}
+                      style={styles.colorChoice}
+                    >
+                      <View style={[styles.colorSwatch, { backgroundColor: color.hex }]} />
+                      <Text style={styles.colorName}>{color.name}</Text>
+                    </Pressable>
+                  ))}
+                </ScrollView>
+              </View>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.suggestions} keyboardShouldPersistTaps="handled">
                 {SUGGESTIONS.map((suggestion) => (
                   <Pressable key={suggestion} onPress={() => setPrompt(suggestion)} style={styles.suggestion}>
@@ -695,7 +754,7 @@ export default function StudioScreen() {
               <SectionTitle
                 number="3"
                 title="Apply edit"
-                subtitle="Lighting, color, retouching, effects, and painted-area cleanup run on this device without an account. Open-ended replacements use the optional cloud generator."
+                subtitle="Lighting, recoloring, retouching, effects, and painted-area cleanup run on this device without an account or usage fee."
               />
               <Text style={styles.fieldLabel}>Preserve original</Text>
               <View style={styles.preserveHeader}>
@@ -729,7 +788,7 @@ export default function StudioScreen() {
                 </View>
               ) : (
                 <StudioButton
-                  label="Apply or generate edit"
+                  label="Apply edit"
                   onPress={() => void generate()}
                   disabled={!prompt.trim() || (scope === "selection" && !hasPaintedSelection(strokes))}
                   icon={<Ionicons name="sparkles" size={19} color={colors.white} />}
@@ -772,7 +831,7 @@ export default function StudioScreen() {
           </>
         )}
 
-        <Text style={styles.footer}>Edit Studio 2.0 · Images leave the device only when you tap Generate.</Text>
+        <Text style={styles.footer}>Edit Studio 2.0 · Built-in edits stay on this device. Only optional cloud requests upload an image.</Text>
       </ScrollView>
 
       <Modal transparent animationType="slide" visible={settingsVisible} onRequestClose={() => setSettingsVisible(false)}>
@@ -826,6 +885,11 @@ const styles = StyleSheet.create({
   sliderRow: { flexDirection: "row", alignItems: "center", gap: 7 },
   inlineActions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   promptInput: { minHeight: 126, borderRadius: radii.medium, paddingHorizontal: 14, paddingVertical: 13, backgroundColor: colors.background, borderWidth: 1, borderColor: colors.border, color: colors.text, fontSize: 16, lineHeight: 23 },
+  recolorBlock: { gap: 9 },
+  colorRow: { gap: 10, paddingRight: 12 },
+  colorChoice: { width: 58, alignItems: "center", gap: 6 },
+  colorSwatch: { width: 38, height: 38, borderRadius: 19, borderWidth: 2, borderColor: colors.border },
+  colorName: { color: colors.muted, fontSize: 10, textTransform: "capitalize" },
   negativeInput: { minHeight: 48, borderRadius: radii.small, paddingHorizontal: 13, backgroundColor: colors.background, borderWidth: 1, borderColor: colors.border, color: colors.text, fontSize: 14 },
   suggestions: { gap: 8, paddingRight: 12 },
   suggestion: { maxWidth: 230, borderRadius: radii.pill, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.panelRaised, paddingVertical: 9, paddingHorizontal: 13 },

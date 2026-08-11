@@ -130,6 +130,21 @@ public final class LocalPhotoEngineModule: Module {
 
   private func filteredImage(_ input: CIImage, operation: String, amount: Double) throws -> CIImage {
     let strength = Float(amount)
+    if let targetColor = recolorTarget(operation) {
+      let red = targetColor.red
+      let green = targetColor.green
+      let blue = targetColor.blue
+      let recolor = CIFilter.falseColor()
+      recolor.inputImage = input
+      recolor.color0 = CIColor(red: red * 0.28, green: green * 0.28, blue: blue * 0.28)
+      recolor.color1 = CIColor(
+        red: red + (1 - red) * 0.62,
+        green: green + (1 - green) * 0.62,
+        blue: blue + (1 - blue) * 0.62
+      )
+      return recolor.outputImage ?? input
+    }
+
     switch operation {
     case "brighten":
       return controls(input, brightness: 0.34 * strength)
@@ -177,14 +192,6 @@ public final class LocalPhotoEngineModule: Module {
       soften.radius = 12 + 30 * strength
       let softened = (soften.outputImage ?? input).cropped(to: input.extent)
       return controls(softened, contrast: 1.04, saturation: 0.96)
-    case "tintRed":
-      return tint(input, red: CGFloat(0.18 * amount), green: CGFloat(-0.035 * amount), blue: CGFloat(-0.035 * amount))
-    case "tintBlue":
-      return tint(input, red: CGFloat(-0.05 * amount), green: CGFloat(0.015 * amount), blue: CGFloat(0.18 * amount))
-    case "tintPink":
-      return tint(input, red: CGFloat(0.16 * amount), green: CGFloat(-0.02 * amount), blue: CGFloat(0.08 * amount))
-    case "tintPurple":
-      return tint(input, red: CGFloat(0.10 * amount), green: CGFloat(-0.05 * amount), blue: CGFloat(0.16 * amount))
     default:
       let enhanced = controls(input, brightness: 0.025 * strength, contrast: 1 + 0.12 * strength, saturation: 1 + 0.16 * strength)
       let sharpen = CIFilter.sharpenLuminance()
@@ -192,6 +199,18 @@ public final class LocalPhotoEngineModule: Module {
       sharpen.sharpness = 0.28 + 0.35 * strength
       return sharpen.outputImage ?? enhanced
     }
+  }
+
+  private func recolorTarget(_ operation: String) -> CIColor? {
+    let prefix = "recolor:#"
+    guard operation.hasPrefix(prefix) else { return nil }
+    let hex = String(operation.dropFirst(prefix.count))
+    guard hex.count == 6, let value = UInt64(hex, radix: 16) else { return nil }
+    return CIColor(
+      red: CGFloat((value >> 16) & 0xff) / 255,
+      green: CGFloat((value >> 8) & 0xff) / 255,
+      blue: CGFloat(value & 0xff) / 255
+    )
   }
 
   private func cleanupImage(
