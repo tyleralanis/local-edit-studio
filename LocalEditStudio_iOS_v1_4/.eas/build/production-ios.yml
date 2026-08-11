@@ -8,8 +8,6 @@ build:
         id: resolve_apple_team_id
     - run:
         name: Generate native Xcode project
-        inputs:
-          apple_team_id: ${{ steps.resolve_apple_team_id.apple_team_id }}
         command: |
           set -euo pipefail
           if ! command -v xcodegen >/dev/null 2>&1; then
@@ -23,7 +21,7 @@ build:
             --exclude 'package.json' \
             --exclude 'ios' \
             ./ ios/
-          export DEVELOPMENT_TEAM="${{ inputs.apple_team_id }}"
+          export DEVELOPMENT_TEAM="${{ steps.resolve_apple_team_id.apple_team_id }}"
           cd ios
           xcodegen generate
     - eas/configure_ios_credentials
