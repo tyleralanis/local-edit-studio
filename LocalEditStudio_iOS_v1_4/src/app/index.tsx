@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
-  Alert,
   AppState,
   KeyboardAvoidingView,
   Modal,
@@ -58,6 +57,14 @@ const SUGGESTIONS = [
   "Create a tasteful cinematic boudoir color grade",
 ];
 
+type NoticeState = {
+  title: string;
+  message: string;
+  confirmLabel?: string;
+  destructive?: boolean;
+  onConfirm?: () => void | Promise<void>;
+};
+
 function Card({ children, style }: { children: ReactNode; style?: object }) {
   return <View style={[styles.card, style]}>{children}</View>;
 }
@@ -108,6 +115,37 @@ function RecoveryModal({ snapshot, onResume, onDiscard }: { snapshot: EditorSnap
   );
 }
 
+function NoticeModal({ notice, onClose }: { notice: NoticeState; onClose: () => void }) {
+  const confirm = () => {
+    onClose();
+    void notice.onConfirm?.();
+  };
+
+  return (
+    <Modal transparent animationType="fade" visible onRequestClose={onClose}>
+      <View style={styles.modalBackdrop}>
+        <View style={styles.modalCard}>
+          <View style={styles.modalIcon}><Ionicons name="information-circle-outline" size={30} color={colors.accentBright} /></View>
+          <Text style={styles.modalTitle}>{notice.title}</Text>
+          <Text style={styles.modalBody}>{notice.message}</Text>
+          {notice.onConfirm ? (
+            <>
+              <StudioButton
+                label={notice.confirmLabel || "Continue"}
+                onPress={confirm}
+                variant={notice.destructive ? "danger" : "primary"}
+              />
+              <StudioButton label="Cancel" onPress={onClose} variant="secondary" />
+            </>
+          ) : (
+            <StudioButton label="OK" onPress={onClose} />
+          )}
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
 export default function StudioScreen() {
   const insets = useSafeAreaInsets();
   const [hydrating, setHydrating] = useState(true);
@@ -131,6 +169,7 @@ export default function StudioScreen() {
   const [status, setStatus] = useState("");
   const [showOriginal, setShowOriginal] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
+  const [notice, setNotice] = useState<NoticeState | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   const snapshot = useMemo<EditorSnapshot | null>(() => {
@@ -223,7 +262,7 @@ export default function StudioScreen() {
     if (busy) return;
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
-      Alert.alert("Photo access needed", "Allow photo access to choose an image for editing.");
+      setNotice({ title: "Photo access needed", message: "Allow photo access to choose an image for editing." });
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], quality: 1 });
@@ -245,7 +284,7 @@ export default function StudioScreen() {
       }
       setStatus("");
     } catch (error) {
-      Alert.alert("Could not open photo", error instanceof Error ? error.message : "Try another image.");
+      setNotice({ title: "Could not open photo", message: error instanceof Error ? error.message : "Try another image." });
     } finally {
       setBusy(false);
     }
@@ -280,7 +319,7 @@ export default function StudioScreen() {
       setWorking(prepared);
       setStrokes([]);
     } catch (error) {
-      Alert.alert("Edit failed", error instanceof Error ? error.message : "Try again.");
+      setNotice({ title: "Edit failed", message: error instanceof Error ? error.message : "Try again." });
     } finally {
       setBusy(false);
       setStatus("");
@@ -315,21 +354,18 @@ export default function StudioScreen() {
   };
 
   const discardCurrent = () => {
-    Alert.alert("Discard this edit?", "This removes the working photo, prompts, masks, and local history from Edit Studio.", [
-      { text: "Keep editing", style: "cancel" },
-      {
-        text: "Discard",
-        style: "destructive",
-        onPress: () => {
-          void (async () => {
-            abortRef.current?.abort();
-            clearEditorState();
-            await clearSession();
-            await removeStudioFiles();
-          })();
-        },
+    setNotice({
+      title: "Discard this edit?",
+      message: "This removes the working photo, prompts, masks, and local history from Edit Studio.",
+      confirmLabel: "Discard",
+      destructive: true,
+      onConfirm: async () => {
+        abortRef.current?.abort();
+        clearEditorState();
+        await clearSession();
+        await removeStudioFiles();
       },
-    ]);
+    });
   };
 
   const generate = async (overridePrompt?: string) => {
@@ -337,11 +373,11 @@ export default function StudioScreen() {
     const requestedPrompt = (overridePrompt ?? prompt).trim();
     const decision = evaluatePrompt(requestedPrompt);
     if (!decision.allowed) {
-      Alert.alert("Edit not available", decision.message);
+      setNotice({ title: "Edit not available", message: decision.message || "That edit is not available." });
       return;
     }
     if (scope === "selection" && !hasPaintedSelection(strokes)) {
-      Alert.alert("Paint a selection", "Draw over the area you want changed, or choose Whole image.");
+      setNotice({ title: "Paint a selection", message: "Draw over the area you want changed, or choose Whole image." });
       return;
     }
 
@@ -375,7 +411,7 @@ export default function StudioScreen() {
       if (error instanceof Error && error.name === "AbortError") {
         setStatus("Generation cancelled");
       } else {
-        Alert.alert("Could not generate edit", error instanceof Error ? error.message : "Try again.");
+        setNotice({ title: "Could not generate edit", message: error instanceof Error ? error.message : "Try again." });
         setStatus("");
       }
     } finally {
@@ -390,13 +426,25 @@ export default function StudioScreen() {
 
   const saveToPhotos = async () => {
     if (!working) return;
+    if (Platform.OS === "web") {
+      const response = await fetch(working.uri);
+      const blob = await response.blob();
+      const downloadURL = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = downloadURL;
+      anchor.download = `edit-studio-${Date.now()}.png`;
+      anchor.click();
+      URL.revokeObjectURL(downloadURL);
+      setNotice({ title: "Saved", message: "The edited image download has started." });
+      return;
+    }
     const permission = await MediaLibrary.requestPermissionsAsync();
     if (!permission.granted) {
-      Alert.alert("Photos permission needed", "Allow access so Edit Studio can save the finished image.");
+      setNotice({ title: "Photos permission needed", message: "Allow access so Edit Studio can save the finished image." });
       return;
     }
     await MediaLibrary.saveToLibraryAsync(working.uri);
-    Alert.alert("Saved", "The edited image is in Photos.");
+    setNotice({ title: "Saved", message: "The edited image is in Photos." });
   };
 
   const shareImage = async () => {
@@ -407,37 +455,38 @@ export default function StudioScreen() {
   const checkForUpdates = async () => {
     try {
       if (__DEV__) {
-        Alert.alert("Updates", "Over-the-air updates are active in production and TestFlight builds.");
+        setNotice({ title: "Updates", message: "Over-the-air updates are active in production and TestFlight builds." });
         return;
       }
       const update = await Updates.checkForUpdateAsync();
       if (!update.isAvailable) {
-        Alert.alert("Up to date", "You already have the latest compatible Edit Studio update.");
+        setNotice({ title: "Up to date", message: "You already have the latest compatible Edit Studio update." });
         return;
       }
       await Updates.fetchUpdateAsync();
-      Alert.alert("Update ready", "Restart now to apply it?", [
-        { text: "Later", style: "cancel" },
-        { text: "Restart", onPress: () => void Updates.reloadAsync() },
-      ]);
+      setNotice({
+        title: "Update ready",
+        message: "Restart now to apply it?",
+        confirmLabel: "Restart",
+        onConfirm: () => Updates.reloadAsync(),
+      });
     } catch {
-      Alert.alert("Could not check", "Try checking for updates again later.");
+      setNotice({ title: "Could not check", message: "Try checking for updates again later." });
     }
   };
 
   const revokeVerification = () => {
-    Alert.alert("Reset age & consent check?", "You will need to complete it again before using Edit Studio.", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Reset",
-        style: "destructive",
-        onPress: () => {
-          void clearConsent();
-          setConsentRecord(null);
-          setSettingsVisible(false);
-        },
+    setNotice({
+      title: "Reset age & consent check?",
+      message: "You will need to complete it again before using Edit Studio.",
+      confirmLabel: "Reset",
+      destructive: true,
+      onConfirm: async () => {
+        await clearConsent();
+        setConsentRecord(null);
+        setSettingsVisible(false);
       },
-    ]);
+    });
   };
 
   if (hydrating) {
@@ -456,6 +505,7 @@ export default function StudioScreen() {
           onDiscard={() => void discardRecovery()}
         />
       ) : null}
+      {notice ? <NoticeModal notice={notice} onClose={() => setNotice(null)} /> : null}
 
       <ScrollView
         contentContainerStyle={[styles.content, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 36 }]}

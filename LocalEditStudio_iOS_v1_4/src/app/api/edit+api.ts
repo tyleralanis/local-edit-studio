@@ -6,6 +6,11 @@ import type { EditMode, MaskStroke, Quality } from "@/lib/types";
 
 const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
 const OPENAI_EDIT_URL = "https://api.openai.com/v1/images/edits";
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "Content-Type, Accept",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
 type ServerFormDataEntry = string | File;
 type ServerFormData = { get(name: string): ServerFormDataEntry | null };
 
@@ -15,8 +20,13 @@ function json(body: Record<string, unknown>, status = 200) {
     headers: {
       "Cache-Control": "no-store",
       "X-Content-Type-Options": "nosniff",
+      ...CORS_HEADERS,
     },
   });
+}
+
+export function OPTIONS() {
+  return new Response(null, { status: 204, headers: CORS_HEADERS });
 }
 
 function parseStrokes(value: ServerFormDataEntry | null): MaskStroke[] {
