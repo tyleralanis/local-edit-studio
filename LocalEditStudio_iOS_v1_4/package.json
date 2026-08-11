@@ -1,5 +1,8 @@
 {
   "name": "local-edit-studio-ios",
   "version": "1.4.0",
-  "private": true
+  "private": true,
+  "dependencies": {
+    "expo": "~55.0.0"
+  }
 }

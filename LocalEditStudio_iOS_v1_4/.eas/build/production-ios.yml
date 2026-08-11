@@ -2,6 +2,7 @@ build:
   name: Edit Studio production iOS build
   steps:
     - eas/checkout
+    - eas/install_node_modules
     - eas/resolve_build_config
     - eas/resolve_apple_team_id_from_credentials:
         id: resolve_apple_team_id
